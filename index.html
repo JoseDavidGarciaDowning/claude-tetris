@@ -52,17 +52,75 @@
             <li><kbd>P</kbd> pausa</li>
           </ul>
         </div>
+
+        <div id="skin-selector">
+          <p class="skin-label">SKIN</p>
+          <div class="skin-buttons">
+            <button class="skin-btn active" data-skin="retro">Retro</button>
+            <button class="skin-btn" data-skin="neon">Neon</button>
+            <button class="skin-btn" data-skin="pastel">Pastel</button>
+            <button class="skin-btn" data-skin="pixel">Pixel</button>
+          </div>
+        </div>
       </aside>
     </div>
 
     <div id="overlay" class="overlay hidden">
-      <div class="overlay-box">
-        <p id="overlay-title">GAME OVER</p>
+      <!-- Pause menu section -->
+      <div id="pause-content" class="overlay-box hidden">
+        <h2 class="overlay-title">PAUSA</h2>
+        <div class="pause-menu">
+          <button class="pause-btn" id="resume-btn">&#9654; Reanudar</button>
+          <button class="pause-btn" id="menu-restart-btn">&#8634; Reiniciar</button>
+          <div class="controls-section">
+            <h3 class="controls-title">Controles</h3>
+            <div class="controls-grid">
+              <span class="key">&#8592; &#8594;</span><span>Mover</span>
+              <span class="key">&#8593;</span><span>Rotar</span>
+              <span class="key">&#8595;</span><span>Bajar</span>
+              <span class="key">Espacio</span><span>Hard drop</span>
+              <span class="key">P / Esc</span><span>Pausa</span>
+            </div>
+          </div>
+          <div class="level-picker">
+            <span class="level-label">Nivel inicial:</span>
+            <button class="level-btn" id="level-down-btn">&#8722;</button>
+            <span id="starting-level-display">1</span>
+            <button class="level-btn" id="level-up-btn">+</button>
+          </div>
+        </div>
+      </div>
+      <!-- Game over section -->
+      <div id="gameover-content" class="overlay-box hidden">
+        <h2 class="overlay-title" id="overlay-title">GAME OVER</h2>
         <p id="overlay-score"></p>
+        <div id="name-capture" class="hidden">
+          <p class="name-prompt">¡Entraste al top 5! Tu nombre:</p>
+          <input type="text" id="player-name" maxlength="12" placeholder="Tu nombre" autocomplete="off" />
+          <button id="save-score-btn">Guardar</button>
+        </div>
         <button id="restart-btn">Reiniciar</button>
       </div>
     </div>
   </div>
+
+  <section id="records-section">
+    <div class="records-header">
+      <h2 class="records-title">RECORDS</h2>
+      <button id="reset-records-btn">Resetear</button>
+    </div>
+    <table id="scores-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Puntaje</th>
+          <th>Líneas</th>
+        </tr>
+      </thead>
+      <tbody id="scores-body"></tbody>
+    </table>
+  </section>
 
   <script src="game.js"></script>
 </body>

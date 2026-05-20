@@ -29,6 +29,8 @@ const PIECES = [
 ];
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
+const SCORES_KEY = 'tetris-hi-scores';
+const MAX_SCORES = 5;
 
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
@@ -38,11 +40,23 @@ const scoreEl = document.getElementById('score');
 const linesEl = document.getElementById('lines');
 const levelEl = document.getElementById('level');
 const overlay = document.getElementById('overlay');
-const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
+const pauseContent = document.getElementById('pause-content');
+const gameoverContent = document.getElementById('gameover-content');
+const resumeBtn = document.getElementById('resume-btn');
+const menuRestartBtn = document.getElementById('menu-restart-btn');
+const levelUpBtn = document.getElementById('level-up-btn');
+const levelDownBtn = document.getElementById('level-down-btn');
+const startingLevelDisplay = document.getElementById('starting-level-display');
+const nameCapture = document.getElementById('name-capture');
+const playerNameInput = document.getElementById('player-name');
+const saveScoreBtn = document.getElementById('save-score-btn');
+const scoresBody = document.getElementById('scores-body');
+const resetRecordsBtn = document.getElementById('reset-records-btn');
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+let startingLevel = 1;
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -221,11 +235,57 @@ function drawNext() {
       drawBlock(nextCtx, offX + c, offY + r, shape[r][c], NB);
 }
 
+function loadScores() {
+  try {
+    return JSON.parse(localStorage.getItem(SCORES_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveScore(name, pts, clearedLines) {
+  const scores = loadScores();
+  scores.push({ name, score: pts, lines: clearedLines });
+  scores.sort((a, b) => b.score - a.score);
+  scores.splice(MAX_SCORES);
+  localStorage.setItem(SCORES_KEY, JSON.stringify(scores));
+}
+
+function checkTopFive(pts) {
+  const scores = loadScores();
+  return scores.length < 5 || pts > scores[scores.length - 1].score;
+}
+
+function renderScores(highlightIdx = -1) {
+  const scores = loadScores();
+  scoresBody.innerHTML = '';
+  for (let i = 0; i < MAX_SCORES; i++) {
+    const tr = document.createElement('tr');
+    if (i === highlightIdx) tr.classList.add('score-highlight');
+    const entry = scores[i];
+    tr.innerHTML = entry
+      ? `<td>${i + 1}</td><td>${entry.name}</td><td>${entry.score.toLocaleString()}</td><td>${entry.lines}</td>`
+      : `<td>${i + 1}</td><td>—</td><td>—</td><td>—</td>`;
+    scoresBody.appendChild(tr);
+  }
+}
+
 function endGame() {
   gameOver = true;
   cancelAnimationFrame(animId);
-  overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
+
+  if (checkTopFive(score)) {
+    nameCapture.classList.remove('hidden');
+    playerNameInput.value = '';
+    playerNameInput.focus();
+  } else {
+    nameCapture.classList.add('hidden');
+  }
+
+  renderScores();
+  gameoverContent.classList.remove('hidden');
+  pauseContent.classList.add('hidden');
   overlay.classList.remove('hidden');
 }
 
@@ -235,10 +295,12 @@ function togglePause() {
   if (!paused) {
     lastTime = performance.now();
     loop(lastTime);
+    overlay.classList.add('hidden');
+    pauseContent.classList.add('hidden');
   } else {
     cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
+    pauseContent.classList.remove('hidden');
+    gameoverContent.classList.add('hidden');
     overlay.classList.remove('hidden');
   }
 }
@@ -264,22 +326,25 @@ function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  level = startingLevel;
   paused = false;
   gameOver = false;
-  dropInterval = 1000;
+  dropInterval = Math.max(100, 1000 - (startingLevel - 1) * 90);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
+  startingLevelDisplay.textContent = startingLevel;
   overlay.classList.add('hidden');
+  pauseContent.classList.add('hidden');
+  gameoverContent.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
-  if (e.code === 'KeyP') { togglePause(); return; }
+  if (e.code === 'KeyP' || e.code === 'Escape') { togglePause(); return; }
   if (paused || gameOver) return;
   switch (e.code) {
     case 'ArrowLeft':
@@ -304,9 +369,38 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+resumeBtn.addEventListener('click', togglePause);
+menuRestartBtn.addEventListener('click', init);
+levelUpBtn.addEventListener('click', () => {
+  startingLevel = Math.min(15, startingLevel + 1);
+  startingLevelDisplay.textContent = startingLevel;
+});
+levelDownBtn.addEventListener('click', () => {
+  startingLevel = Math.max(1, startingLevel - 1);
+  startingLevelDisplay.textContent = startingLevel;
+});
 
 document.getElementById('theme-toggle').addEventListener('change', function () {
   document.body.classList.toggle('light', this.checked);
 });
 
+saveScoreBtn.addEventListener('click', () => {
+  const name = playerNameInput.value.trim() || 'Anon';
+  saveScore(name, score, lines);
+  const saved = loadScores();
+  const idx = saved.findIndex(e => e.score === score && e.name === name);
+  renderScores(idx);
+  nameCapture.classList.add('hidden');
+});
+
+resetRecordsBtn.addEventListener('click', () => {
+  localStorage.removeItem(SCORES_KEY);
+  renderScores();
+});
+
+playerNameInput.addEventListener('keydown', e => {
+  if (e.code === 'Enter') saveScoreBtn.click();
+});
+
 init();
+renderScores();
