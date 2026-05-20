@@ -241,3 +241,68 @@ kbd {
 #restart-btn:hover {
   background: #9bbdff;
 }
+
+/* Skin selector */
+#skin-selector {
+  margin-top: 1rem;
+}
+
+.skin-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  color: #888;
+  margin: 0 0 0.4rem 0;
+  text-transform: uppercase;
+}
+
+.skin-buttons {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.skin-btn {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.skin-btn:hover { border-color: #7aa2f7; }
+.skin-btn.active { background: #7aa2f7; color: #0f0f17; border-color: #7aa2f7; }
+
+/* Neon body overrides */
+body.neon {
+  --bg: #000010;
+  --surface: #050518;
+  --border: #1a1a3a;
+  --grid-line: #0d0d25;
+  --text: #e0e0ff;
+  --overlay-bg: rgba(0, 0, 16, 0.85);
+}
+
+/* Pastel body overrides */
+body.pastel {
+  --bg: #fdf0f8;
+  --surface: #ffe8f5;
+  --border: #e8c8e0;
+  --grid-line: #f0d8ec;
+  --text: #4a2a40;
+  --overlay-bg: rgba(240, 200, 230, 0.85);
+}
+
+/* Pixel body overrides */
+body.pixel {
+  --bg: #1a1a0e;
+  --surface: #141408;
+  --border: #2a2a10;
+  --grid-line: #1e1e0c;
+  --text: #e8e8c0;
+  --overlay-bg: rgba(10, 10, 5, 0.85);
+}
